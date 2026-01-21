@@ -124,7 +124,9 @@ class MapVisualization {
         allStates.forEach(state => {
             const evaluation = this.stateEvaluations[state.abbr];
             const fillColor = this._getStateColor(evaluation);
-            const percentComplete = evaluation ? evaluation.percentComplete.toFixed(0) : '0';
+            const percentComplete = (evaluation && evaluation.percentComplete !== undefined)
+                ? evaluation.percentComplete.toFixed(0)
+                : '0';
 
             html += `
                 <div class="state-cell" 
