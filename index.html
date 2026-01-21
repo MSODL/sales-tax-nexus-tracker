@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Tax Nexus Threshold Tracker</title>
+  <meta name="description"
+    content="Track economic nexus thresholds across all U.S. states and manage sales tax compliance">
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#1a1f3a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nexus Tracker">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Favicon and Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <h1>Sales Tax Nexus Tracker</h1>
+      <p class="header-subtitle">Monitor Economic Nexus Obligations Across All U.S. States</p>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-view="dashboard">
+        📊 Dashboard
+      </button>
+      <button class="nav-tab" data-view="input">
+        ✏️ Sales Input
+      </button>
+      <button class="nav-tab" data-view="scenario">
+        🔮 Scenario Modeling
+      </button>
+      <button class="nav-tab" data-view="about">
+        ℹ️ About
+      </button>
+    </nav>
+
+    <!-- Dashboard View -->
+    <div id="view-dashboard" class="view-panel">
+      <!-- Summary Stats -->
+      <div class="grid grid-cols-4 mb-xl">
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--color-risk-established);" id="stat-nexus-established">0</div>
+          <div class="stat-label">Nexus Established</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--color-risk-imminent);" id="stat-nexus-imminent">0</div>
+          <div class="stat-label">Nexus Imminent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--color-risk-monitoring);" id="stat-monitoring">0</div>
+          <div class="stat-label">Being Monitored</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--color-risk-none);" id="stat-no-nexus">0</div>
+          <div class="stat-label">No Concerns</div>
+        </div>
+      </div>
+
+      <!-- Interactive Map -->
+      <div class="glass-card">
+        <h2>U.S. Nexus Map</h2>
+        <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-md);">
+          Click any state to view detailed nexus information
+        </p>
+        <div id="nexus-map"></div>
+      </div>
+
+      <!-- State Table -->
+      <div class="glass-card">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+          <h2>State-by-State Analysis</h2>
+          <div style="display: flex; gap: var(--spacing-md);">
+            <button class="btn btn-secondary btn-sm" onclick="app.exportCSV()">
+              📄 Export CSV
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="app.exportExcel()">
+              📊 Export Excel
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="app.exportPDF()">
+              📑 Export PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="states-table">
+            <thead>
+              <tr>
+                <th>State</th>
+                <th>Risk Level</th>
+                <th>Revenue</th>
+                <th>Revenue Threshold</th>
+                <th>Transactions</th>
+                <th>Transaction Threshold</th>
+                <th>% Complete</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="states-table-body">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: var(--spacing-2xl);">
+                  <p style="color: var(--color-text-muted);">Enter your sales data to begin analysis</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Input View -->
+    <div id="view-input" class="view-panel hidden">
+      <div class="glass-card">
+        <h2>Enter Your Sales Data</h2>
+        <p>Provide information about your sales across different states to calculate nexus status.</p>
+
+        <form id="input-form" class="mt-lg">
+          <div class="grid grid-cols-2">
+            <div class="form-group">
+              <label class="form-label" for="company-name">Company Name</label>
+              <input type="text" id="company-name" class="form-input" placeholder="Your Company, Inc.">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="measurement-period">Measurement Period</label>
+              <select id="measurement-period" class="form-select">
+                <option value="rolling_12">Rolling 12 Months</option>
+                <option value="calendar">Calendar Year (Current)</option>
+                <option value="previous">Previous Calendar Year</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Quick Entry Options</label>
+            <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="app.bulkImport()">
+                📁 Bulk Import (CSV)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="app.addSampleData()">
+                🎲 Add Sample Data
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="app.clearAllData()">
+                🗑️ Clear All
+              </button>
+            </div>
+          </div>
+
+          <h3>Sales by State</h3>
+          <p class="form-help">Enter sales data for each state where you have activity. Leave blank for states with no
+            sales.</p>
+
+          <div id="state-inputs-container" style="max-height: 600px; overflow-y: auto;">
+            <!-- State input rows will be dynamically generated -->
+          </div>
+
+          <div class="mt-xl" style="display: flex; gap: var(--spacing-md); justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="app.switchView('dashboard')">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary btn-lg">
+              Calculate Nexus 🚀
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Scenario Modeling View -->
+    <div id="view-scenario" class="view-panel hidden">
+      <div class="glass-card">
+        <h2>Scenario Modeling</h2>
+        <p>Project how changes in sales volume would affect your nexus obligations.</p>
+
+        <div class="alert alert-info mt-lg">
+          <div>
+            <strong>What-If Analysis:</strong> Discover which new states you'll need to register in if your sales grow
+            by a certain percentage.
+          </div>
+        </div>
+
+        <div class="form-group mt-xl">
+          <label class="form-label" for="growth-percentage">Sales Growth/Decline (%)</label>
+          <div style="display: flex; gap: var(--spacing-md); align-items: center;">
+            <input type="number" id="growth-percentage" class="form-input" value="20" min="-100" max="500" step="5"
+              style="max-width: 200px;">
+            <button class="btn btn-primary" onclick="app.runScenario()">
+              Run Scenario 🔮
+            </button>
+          </div>
+          <span class="form-help">Enter a positive number for growth or negative for decline</span>
+        </div>
+
+        <div id="scenario-results" class="mt-xl hidden">
+          <!-- Results will be populated here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- About View -->
+    <div id="view-about" class="view-panel hidden">
+      <div class="glass-card">
+        <h2>About This Tool</h2>
+
+        <h3>Purpose</h3>
+        <p>
+          The Sales Tax Nexus Threshold Tracker helps businesses determine when and where they have economic nexus
+          in U.S. states following the South Dakota v. Wayfair Supreme Court decision. This tool monitors your
+          sales activity against state thresholds and provides compliance guidance.
+        </p>
+
+        <h3>How It Works</h3>
+        <ol style="margin-left: var(--spacing-lg); color: var(--color-text-secondary);">
+          <li>Enter your sales data by state (revenue and transaction counts)</li>
+          <li>The tool compares your sales to each state's economic nexus threshold</li>
+          <li>States are categorized by risk level (No Nexus, Monitoring, Imminent, Established)</li>
+          <li>Get plain-language guidance on next steps for compliance</li>
+          <li>Model future scenarios to plan ahead</li>
+        </ol>
+
+        <h3>Features</h3>
+        <ul style="margin-left: var(--spacing-lg); color: var(--color-text-secondary);">
+          <li>Comprehensive database of all 50 states + DC</li>
+          <li>Current economic nexus thresholds (as of January 2026)</li>
+          <li>Automatic threshold comparison and risk categorization</li>
+          <li>Marketplace facilitator sales exclusion logic</li>
+          <li>Compliance guidance and registration information</li>
+          <li>Scenario modeling for growth planning</li>
+          <li>Export capabilities (CSV, Excel, PDF)</li>
+          <li>Local storage for data persistence</li>
+        </ul>
+
+        <h3>Best Practices</h3>
+        <ul style="margin-left: var(--spacing-lg); color: var(--color-text-secondary);">
+          <li>Review your nexus status quarterly as sales patterns change</li>
+          <li>Register promptly when thresholds are exceeded</li>
+          <li>Keep detailed records for audit purposes</li>
+          <li>Consult with tax professionals for complex situations</li>
+          <li>Stay informed about state law changes</li>
+        </ul>
+
+        <h3>Data Privacy</h3>
+        <p>
+          All data entered into this tool is stored locally in your browser using localStorage.
+          No information is transmitted to external servers. Your business data remains private and secure.
+        </p>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <div class="disclaimer-title">⚠️ Important Disclaimer</div>
+      <p>
+        <strong>This tool is for informational and educational purposes only.</strong> It does not constitute
+        legal, tax, or professional advice. Sales tax laws and nexus thresholds change frequently and vary by
+        state. While we strive to maintain accurate and current information, you should verify all thresholds
+        and rules with the relevant state tax authorities.
+      </p>
+      <p class="mb-0">
+        Consult with a qualified sales tax professional or attorney before making compliance decisions.
+        The creators of this tool assume no liability for decisions made based on the information provided.
+      </p>
+    </div>
+  </div>
+
+  <!-- State Detail Modal -->
+  <div class="modal-overlay" id="state-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-state-name">State Details</h3>
+        <button class="modal-close" onclick="app.closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Content populated dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="data/state-nexus-data.js"></script>
+  <script src="modules/nexus-engine.js"></script>
+  <script src="modules/ai-explainer.js"></script>
+  <script src="modules/compliance-guide.js"></script>
+  <script src="modules/export-handler.js"></script>
+  <script src="modules/map-visualization.js"></script>
+  <script src="app.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then((registration) => {
+            console.log('✅ Service Worker registered successfully:', registration.scope);
+
+            // Check for updates periodically
+            setInterval(() => {
+              registration.update();
+            }, 60000); // Check every minute
+          })
+          .catch((error) => {
+            console.error('❌ Service Worker registration failed:', error);
+          });
+      });
+    }
+  </script>
+</body>
+
+</html>
