@@ -3,20 +3,21 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'nexus-tracker-v1';
+const CACHE_NAME = 'nexus-tracker-v2';
 const urlsToCache = [
-    '/index.html',
-    '/styles.css',
-    '/app.js',
-    '/modules/nexus-engine.js',
-    '/modules/ai-explainer.js',
-    '/modules/compliance-guide.js',
-    '/modules/map-visualization.js',
-    '/modules/export-handler.js',
-    '/data/state-thresholds.json',
-    '/manifest.json',
-    '/assets/icon-192.png',
-    '/assets/icon-512.png'
+    './',
+    './index.html',
+    './styles.css',
+    './app.js',
+    './modules/nexus-engine.js',
+    './modules/ai-explainer.js',
+    './modules/compliance-guide.js',
+    './modules/map-visualization.js',
+    './modules/export-handler.js',
+    './data/state-nexus-data.js',
+    './manifest.json',
+    './assets/icon-192.png',
+    './assets/icon-512.png'
 ];
 
 // Install event - cache assets
