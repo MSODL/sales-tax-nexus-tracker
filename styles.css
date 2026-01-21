@@ -931,3 +931,35 @@ p {
     grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
   }
 }
+/* Table Header and Export Buttons Responsive Styles */
+.table-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.export-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+/* Mobile responsive - stack buttons vertically */
+@media (max-width: 768px) {
+  .table-header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+
+  .export-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .export-buttons .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
