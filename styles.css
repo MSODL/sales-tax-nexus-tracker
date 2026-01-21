@@ -963,3 +963,15 @@ p {
     justify-content: center;
   }
 }
+/* Update mobile responsiveness for quick entry buttons */
+@media (max-width: 768px) {
+    .quick-entry-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .quick-entry-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
